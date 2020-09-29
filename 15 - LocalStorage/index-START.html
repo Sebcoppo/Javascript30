@@ -19,16 +19,85 @@
     <ul class="plates">
       <li>Loading Tapas...</li>
     </ul>
-    <form class="add-items">
+    <form class="add-items" name='myform'>
       <input type="text" name="item" placeholder="Item Name" required>
       <input type="submit" value="+ Add Item">
+      <br>
+      <label class="cba">
+         <a  onclick="javascript:checkAll('myform', true);" href="javascript:void(0);">Check All</a> |
+         <a  onclick="javascript:UncheckAll('myform', false);" href="javascript:void(0);">UnCheck All</a>
+      </label>
     </form>
   </div>
 
 <script>
   const addItems = document.querySelector('.add-items');
   const itemsList = document.querySelector('.plates');
-  const items = [];
+  const items = JSON.parse(localStorage.getItem('items')) || [];
+
+
+  function addItem(e) {
+    e.preventDefault();
+    const text = this.querySelector('[name=item]').value;
+    const item = {
+      text,
+      done: false
+    }
+    items.push(item);
+    populateList(items, itemsList);
+    localStorage.setItem('items', JSON.stringify(items));
+    this.reset();
+  }
+
+  function populateList(plates = [], platesList) {
+    platesList.innerHTML = plates.map((plate, i) => {
+      return `
+        <li>
+          <input type="checkbox" data-index=${i} id="item${i}" ${plate.done ? 'checked' : ''} />
+          <label for="item${i}">${plate.text}</label>
+        </li>
+      `;
+    }).join('');
+  }
+
+  function toggleDone(e) {
+    if (!e.target.matches('input')) return;
+    const el = e.target;
+    const index = el.dataset.index;
+    items[index].done = !items[index].done;
+    localStorage.setItem('items', JSON.stringify(items));
+    populateList(items, itemsList);
+  }
+
+  addItems.addEventListener('submit', addItem);
+  itemsList.addEventListener('click', toggleDone);
+
+  function checkAll() {
+      checkboxes = document.getElementsByTagName('input');
+      for (let i = 0; i < checkboxes.length; i++) {
+          if (checkboxes[i].type === 'checkbox') {
+              checkboxes[i].checked = true;
+              items[i].done = true;
+          }
+      }
+      localStorage.setItem('items', JSON.stringify(items));
+  }
+
+  function UncheckAll() {
+        checkboxes = document.getElementsByTagName('input');
+        for (let i = 0; i < checkboxes.length; i++) {
+            if (checkboxes[i].type === 'checkbox') {
+                checkboxes[i].checked = false;
+                items[i].done = false;
+            }
+        }
+        localStorage.setItem('items', JSON.stringify(items));
+    }
+
+  populateList(items, itemsList);
+
+
+
 
 </script>
 
